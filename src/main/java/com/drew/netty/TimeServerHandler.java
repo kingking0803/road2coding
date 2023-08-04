@@ -12,14 +12,18 @@ import java.util.Date;
 
 public class TimeServerHandler extends ChannelHandlerAdapter {
 
+    private static int count = 0;
+
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-        ByteBuf buf = (ByteBuf) msg; // 类似nio中的ByteBuffer
-        byte[] req = new byte[buf.readableBytes()];
-        buf.readBytes(req);
-        String body = new String(req, "UTF-8");
-        System.out.println("time server receive order: " + body);
+//        ByteBuf buf = (ByteBuf) msg; // 类似nio中的ByteBuffer
+//        byte[] req = new byte[buf.readableBytes()];
+//        buf.readBytes(req);
+//        String body = new String(req, "UTF-8");
+        String body = (String) msg;
+        System.out.println("time server receive order: " + body + "; count is " + ++count);
         String currentTime = "query time order".equalsIgnoreCase(body) ? new Date().toString() : "bad order";
+        currentTime += System.getProperty("line.separator");
         ByteBuf resp = Unpooled.copiedBuffer(currentTime.getBytes());
         // netty为了防止频繁的唤醒Selector进行消息发送，netty的wirte方法并不直接将消息写入到SocketChannel，
         // 调用write方法只是将消息放到缓存区
