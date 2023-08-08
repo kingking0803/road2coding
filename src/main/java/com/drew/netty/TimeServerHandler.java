@@ -7,6 +7,7 @@ import io.netty.channel.ChannelHandlerAdapter;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelHandlerInvoker;
 import io.netty.util.concurrent.EventExecutorGroup;
+import org.msgpack.MessagePack;
 
 import java.util.Date;
 
@@ -20,14 +21,16 @@ public class TimeServerHandler extends ChannelHandlerAdapter {
 //        byte[] req = new byte[buf.readableBytes()];
 //        buf.readBytes(req);
 //        String body = new String(req, "UTF-8");
-        String body = (String) msg;
-        System.out.println("time server receive order: " + body + "; count is " + ++count);
-        String currentTime = "query time order".equalsIgnoreCase(body) ? new Date().toString() : "bad order";
-        currentTime += System.getProperty("line.separator");
-        ByteBuf resp = Unpooled.copiedBuffer(currentTime.getBytes());
+//        String body = (String) msg;
+//        System.out.println("time server receive order: " + body + "; count is " + ++count);
+//        String currentTime = "query time order".equalsIgnoreCase(body) ? new Date().toString() : "bad order";
+//        currentTime += "$_";
+//        ByteBuf resp = Unpooled.copiedBuffer(currentTime.getBytes());
+//        TimeInfo info = (TimeInfo) msg;
+        System.out.println("server receive time is " + msg);
         // netty为了防止频繁的唤醒Selector进行消息发送，netty的wirte方法并不直接将消息写入到SocketChannel，
         // 调用write方法只是将消息放到缓存区
-        ctx.write(resp);
+        ctx.write(msg);
     }
 
     @Override

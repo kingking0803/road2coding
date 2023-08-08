@@ -8,6 +8,8 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelHandlerInvoker;
 import io.netty.util.concurrent.EventExecutorGroup;
 
+import java.util.Date;
+
 public class TimeClientHandler extends ChannelHandlerAdapter {
 
     private byte[] req;
@@ -15,7 +17,7 @@ public class TimeClientHandler extends ChannelHandlerAdapter {
     private static int count = 0;
 
     public TimeClientHandler() {
-        req = ("query time order" + System.getProperty("line.separator")).getBytes();
+        req = "query time order$_".getBytes();
     }
 
     /**
@@ -25,11 +27,16 @@ public class TimeClientHandler extends ChannelHandlerAdapter {
      */
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
-        for (int i = 0; i < 100; i++) {
-            ByteBuf firstMessage = Unpooled.buffer(req.length);
-            firstMessage.writeBytes(req);
-            ctx.writeAndFlush(firstMessage);
+        for (int i = 0; i < 10; i++) {
+//            ByteBuf firstMessage = Unpooled.buffer(req.length);
+//            firstMessage.writeBytes(req);
+//            ctx.writeAndFlush(firstMessage);
+            TimeInfo info = new TimeInfo();
+            info.setCurrentTime(new Date());
+            info.setSendName("client" + i);
+            ctx.write(info);
         }
+        ctx.flush();
     }
 
     /**
@@ -44,8 +51,15 @@ public class TimeClientHandler extends ChannelHandlerAdapter {
 //        byte[] req = new byte[buf.readableBytes()];
 //        buf.readBytes(req);
 //        String body = new String(req, "UTF-8");
-        String body = (String) msg;
-        System.out.println("now is " + body + "; count is " + ++count);
+//        String body = (String) msg;
+//        System.out.println("now is " + body + "; count is " + ++count);
+        System.out.println("client receive msgpack is " + msg);
+//        ctx.write(msg);
+    }
+
+    @Override
+    public void channelReadComplete(ChannelHandlerContext ctx) throws Exception {
+        ctx.flush();
     }
 
     /**

@@ -1,6 +1,8 @@
 package com.drew.netty;
 
 import io.netty.bootstrap.ServerBootstrap;
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelInitializer;
@@ -8,7 +10,12 @@ import io.netty.channel.ChannelOption;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
+import io.netty.handler.codec.DelimiterBasedFrameDecoder;
+import io.netty.handler.codec.LengthFieldBasedFrameDecoder;
+import io.netty.handler.codec.LengthFieldPrepender;
 import io.netty.handler.codec.LineBasedFrameDecoder;
+import io.netty.handler.codec.msgpack.MsgpackDecoder;
+import io.netty.handler.codec.msgpack.MsgpackEncoder;
 import io.netty.handler.codec.string.StringDecoder;
 
 public class TimeServer {
@@ -48,9 +55,21 @@ public class TimeServer {
 
         @Override
         protected void initChannel(SocketChannel socketChannel) throws Exception {
+//            ByteBuf delimiter = Unpooled.copiedBuffer("$_".getBytes());
+
             socketChannel.pipeline()
-                    .addLast(new LineBasedFrameDecoder(1024)) // 解码器，以换行符作为分隔符
-                    .addLast(new StringDecoder()) // 将ByteBuf转为String
+//                    .addLast(new LineBasedFrameDecoder(1024)) // 解码器，以换行符作为分隔符
+                    // DelimiterBasedFrameDecoder(maxFrameLength, delimiter)，
+                    // maxFrameLength表示单条消息最大长度，超出长度没有找到结束符就跑出异常，防止异常码流缺失分隔符导致内存溢出，
+                    // delimiter表示分隔符
+//                    .addLast(new DelimiterBasedFrameDecoder(1024, delimiter))
+//                    .addLast(new StringDecoder()) // 将ByteBuf转为String
+                    // LengthFieldBasedFrameDecoder用于处理半包消息，主要和LengthFieldPrepender配合使用
+                    .addLast("frameDecoder", new LengthFieldBasedFrameDecoder(65535, 0,2, 0, 2))
+                    .addLast("msgpack decoder", new MsgpackDecoder())
+                    // LengthFieldPrepender用于在序列化对象前面新增一个消息长度字段，这个字段所占空间为参数2个字节
+                    .addLast("framePrepair", new LengthFieldPrepender(2))
+                    .addLast("msgpack encoder", new MsgpackEncoder())
                     .addLast(new TimeServerHandler());
         }
     }
