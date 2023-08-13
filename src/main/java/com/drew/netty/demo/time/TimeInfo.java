@@ -1,4 +1,4 @@
-package com.drew.netty;
+package com.drew.netty.demo.time;
 
 import org.msgpack.annotation.Message;
 
