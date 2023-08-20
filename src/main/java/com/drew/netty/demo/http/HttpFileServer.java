@@ -39,7 +39,7 @@ public class HttpFileServer {
                                     .addLast(new HttpRequestEncoder())
                                     // 支持异步发送大码流，例如大的文件传输，但不占用过多内存，防止Java内存溢出
                                     .addLast(new ChunkedWriteHandler())
-                                    .addLast(new HttpFileServerHandler());
+                                    .addLast(new HttpFileServerHandler(DEFAULT_URL));
                         }
                     });
             ChannelFuture f = b.bind(host, port).sync();
